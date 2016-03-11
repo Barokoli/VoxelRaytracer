@@ -416,7 +416,7 @@ __kernel void InitRaycaster(write_only image2d_t output,__global int *chunk,int 
     float screenX = get_global_id(0);
     float screenY = get_global_id(1);
     
-    write_imagef(output, (int2)(screenX,screenY), (float4)(1.0f,0.0f,0.0f,1.0f));
+    write_imagef(output, (int2)(screenX,screenY), (float4)(0.0f,1.0f,0.0f,1.0f));
     
     /*int uvId = get_global_id(0)+get_global_size(0)*(get_global_size(1)-get_global_id(1)-1);
     

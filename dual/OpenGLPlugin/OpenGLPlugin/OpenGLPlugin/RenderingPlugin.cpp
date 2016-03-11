@@ -266,7 +266,7 @@ extern "C" UnityRenderingEvent UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API GetRen
 "void main()\n"													\
 "{\n"															\
 "	gl_Position = (projMatrix * worldMatrix) * vec4(pos,1);\n"	\
-"	ocolor = vec4(1,0,0,1);\n"									\
+"	ocolor = texture( myTextureSampler, pos.xy ).rgba;\n"									\
 "}\n"															\
 
 //texture( myTextureSampler, pos.xy ).rgba;

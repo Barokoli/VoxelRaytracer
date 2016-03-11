@@ -249,6 +249,7 @@
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SYMROOT = /Users/sebastian/UnityProjects/VoxelRaytracer/dual/Assets/Plugins;
 				WRAPPER_EXTENSION = bundle;
 			};
 			name = Debug;
