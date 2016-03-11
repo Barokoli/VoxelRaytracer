@@ -97,10 +97,10 @@ public unsafe class Renderman {
 				if(fBuffer[id] == 255){
 					Debug.Log("Yes!");
 				}
-				CL_Handler.debugTex.SetPixel(x,y,new Color(val,val,val,1));
+				//CL_Handler.debugTex.SetPixel(x,y,new Color(val,val,val,1));
 			}
 		}
-		CL_Handler.debugTex.Apply();
+		//CL_Handler.debugTex.Apply();
 	}
 
 	public uint evaluateBlock(int relX, int relY,int relZ,uint* chunk,int lastI){
