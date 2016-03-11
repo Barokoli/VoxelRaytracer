@@ -3,17 +3,17 @@ using System.Collections;
 using System.IO;
 
 public unsafe class Chunk{
-	public Vector3 pos;
-	Vector3 absPos;
-	public int state;
+	public Vector3 pos; //Coordinates in Coord Space
+	Vector3 absPos; //Coordinates in World space 6.4m -> 1 Chunk
+	public int state;  //UnInitialized, Idle, Rendered
 	int id;
-	GameObject host;
-	public int memId;
-	public uint* chunkMem;
-	public int MemLength;
-	int[] borders;
-	int LodLevel;
-	public Chunk(Vector3 Pos,int Id){
+	GameObject host; //Empty World representative
+	public int memId;  //Unmanaged Memory ID GPU+CPU side
+	public uint* chunkMem;  //Unmanaged memory
+	public int MemLength;  //Memory Size
+	int[] borders;  //LOD borders
+	int LodLevel;  //borders.length currently
+	public Chunk(Vector3 Pos,int Id){  //Constructor -> Uninitialized
 		MemLength = 0;
 		memId = -1;
 		pos = Pos;
@@ -37,7 +37,7 @@ public unsafe class Chunk{
 		}
 	}
 
-	public void render(int lvl){
+	public void render(int lvl){  //Render the chunk Uninitialized->Rendered
 		if(memId == -1){
 			if(Terrain_Handler.chunkInitKernel1 == -1){
 				Terrain_Handler.chunkInitKernel1 = CL_Handler.createKernel("chunkInit1");
@@ -48,12 +48,11 @@ public unsafe class Chunk{
 			float t = Time.realtimeSinceStartup;
 			InitChunk();
 			Debug.Log("Succesful Chunk initialization in "+(Time.realtimeSinceStartup-t)*1000+"ms");
-			saveToFile();
-
+			saveToFile();  //Saving initialized file to ChunkDataSaves
 		}
 	}
 
-	public void checkFirst(Vector3 relPos){
+	public void checkFirst(Vector3 relPos){ //Debug for Octree traversal
 		Vector3 bPos = new Vector3(0,0,0);
 		uint block = chunkMem[MemLength-1];
     //float4 bPos = (float4)(0.0,0.0,0.0,0.0);
@@ -71,11 +70,10 @@ public unsafe class Chunk{
     }
     block &= 0x00FFFFFF;
     //block |= lvl<<25;
-		Debug.Log(block+" Done");
 		//return block&0x00FFFFFF;
 	}
 
-	private int average(uint a,uint b,uint c,uint d,uint e,uint f,uint g,uint h){
+	private int average(uint a,uint b,uint c,uint d,uint e,uint f,uint g,uint h){ //Average surrounding blocks
 	  return (int)Mathf.Floor(((0x000000FF&a)+(0x000000FF&a)+(0x000000FF&a)+(0x000000FF&a)+(0x000000FF&a)+(0x000000FF&a)+(0x000000FF&a)+(0x000000FF&a))*0.125f);
 	}
 
@@ -96,21 +94,14 @@ public unsafe class Chunk{
 		localWorkSize [0] = (int)8;
 		localWorkSize [1] = (int)8;
 		localWorkSize [2] = (int)8;
-		CL_Handler.DispatchKernel(Terrain_Handler.chunkInitKernel1,3,globalWorkSize,localWorkSize,false);
-
-		//CL_Handler.MemCpy_ClientToHost(CL_Handler.tmpChunkDataId);
-		//DebugSave();
-		//return;
+		CL_Handler.DispatchKernel(Terrain_Handler.chunkInitKernel1,3,globalWorkSize,localWorkSize,false);//ChunkInitKernel
 
 		int AbsSize = (int)(Terrain_Handler.ChunkSize.x*Terrain_Handler.ChunkSize.y*Terrain_Handler.ChunkSize.z);
 		CL_Handler.SetKernelArgMem(Terrain_Handler.chunkInitKernel2,0,CL_Handler.tmpChunkDataId);
 		int dispachSize = AbsSize;
 		int i = 0;
-		//Debug.Log("Abssize : "+AbsSize);
 		for(i = (int)(AbsSize)>>16; i>0; i>>=1){
-			//Debug.Log("i ="+i+"; dispachSize ="+dispachSize+";");
 			CL_Handler.SetKernelArgValue(Terrain_Handler.chunkInitKernel2,1,dispachSize,sizeof(int));
-			//Debug.Log("Dispatch size: "+dispachSize);
 			globalWorkSize[0] = (int)(i);
 			globalWorkSize[1] = (int)(i);
 			globalWorkSize[2] = (int)(i);
@@ -118,62 +109,7 @@ public unsafe class Chunk{
 			dispachSize += i*i*i*8;
 		}
 
-		//CL_Handler.MemCpy_ClientToHost(CL_Handler.tmpChunkDataId);
-		//int sdf = 0;
-		//DebugSave();
-		//CPU finsih
-
-		/*for(i=i; i>0; i >>= 1){
-			for(int j = 0; j < (i<<6); j++){
-		    uint a,b,c,d,e,f,g,h;
-
-				int x = j % i;
-				int y = (j / i) % i;
-				int z = j / (i * i);
-
-		    int id = j*8;
-
-		    a = CL_Handler.tmpChunkData[dispachSize+id  ];
-		    b = CL_Handler.tmpChunkData[dispachSize+id+1];
-		    c = CL_Handler.tmpChunkData[dispachSize+id+2];
-		    d = CL_Handler.tmpChunkData[dispachSize+id+3];
-		    e = CL_Handler.tmpChunkData[dispachSize+id+4];
-		    f = CL_Handler.tmpChunkData[dispachSize+id+5];
-		    g = CL_Handler.tmpChunkData[dispachSize+id+6];
-		    h = CL_Handler.tmpChunkData[dispachSize+id+7];
-
-		    if(a == b &&a == c &&a == d &&a == e &&a == f &&a == g &&a == h&&
-		    (a&0x40000000)!=0){
-		        CL_Handler.tmpChunkData[dispachSize+id  ] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+id+1] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+id+2] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+id+3] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+id+4] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+id+5] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+id+6] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+id+7] = (int) 0x00000000;
-		        CL_Handler.tmpChunkData[dispachSize+(i<<3)+
-		                (int)(x/2.0f)*8+x%2+
-		                ((int)(y/2.0f)*8)*(i>>1)+y%2+
-		                ((int)(z/2.0f)*8)*((i*i)>>2)+z%2] = (0xC0000000)|(0x00FFFFFF&a);
-		    }else{
-
-		        CL_Handler.tmpChunkData[dispachSize+(i<<3)+
-		                (int)(x/2.0f)*8+x%2+
-		                ((int)(y/2.0f)*8)*(i>>1)+y%2+
-		                ((int)(z/2.0f)*8)*((i*i)>>2)+z%2] = (uint) ((0x80000000)|(0x00FFFFFF&(dispachSize+id)));
-		    }
-			}
-			dispachSize += i*i*i*8;
-		}*/
-
-		//DebugSave();
-
-		//CL_Handler.MemCpy_HostToClient(CL_Handler.tmpChunkDataId);
-
-		//DebugSave();
 		//Dispatch chunkscan
-
 		CL_Handler.SetKernelArgMem(Terrain_Handler.chunkScanKernel,0,CL_Handler.tmpChunkDataId);
 		CL_Handler.SetKernelArgMem(Terrain_Handler.chunkScanKernel,1,CL_Handler.tmpScanDataId);
 		CL_Handler.SetKernelArgLocalMem(Terrain_Handler.chunkScanKernel,2,(uint)(Terrain_Handler.MaxChunkSize)*sizeof(int));//TODO:Hardcoded Max Work Size
@@ -209,7 +145,7 @@ public unsafe class Chunk{
 
 		Debug.Log("MemLength :"+MemLength);
 
-		CL_Handler.MemCpy_ClientToHost(CL_Handler.tmpScanDataId);//TODO:Slow?
+		CL_Handler.MemCpy_ClientToHost(CL_Handler.tmpScanDataId);//TODO:Slow? Neccesary?
 		//DebugSave();
 
 		//create memory
@@ -227,7 +163,7 @@ public unsafe class Chunk{
 		CL_Handler.SetKernelArgMem(Terrain_Handler.chunkMemCpyKernel,3,CL_Handler.tmpScanLengthDataId);
 		CL_Handler.SetKernelArgValue(Terrain_Handler.chunkMemCpyKernel,4,Terrain_Handler.MaxChunkSize,sizeof(int));
 		globalWorkSize[0] = (int)CL_Handler.tmpDataSizeCube;
-		//Debug.Log(CL_Handler.tmpDataSizeCube);
+
 		CL_Handler.DispatchKernel(Terrain_Handler.chunkMemCpyKernel,1,globalWorkSize,null,false);
 
 		//Copy Mem to chunkMem
@@ -248,21 +184,19 @@ public unsafe class Chunk{
 	}
 
 	public void saveToFile(){
-		BinaryWriter writer = new BinaryWriter(File.Open((string)(Application.dataPath+"Chunk"+id+".dat"), FileMode.Create));
+		BinaryWriter writer = new BinaryWriter(File.Open((string)(Application.dataPath+"/ChunkDataSaves/Chunk"+id+".dat"), FileMode.Create));
 		for(int i = 0; i < MemLength;i++){
 			uint ret = (chunkMem[i]&0xFF000000)>>24;
 			ret = ret | ((chunkMem[i]&0x00FF0000)>>8);
 			ret = ret | ((chunkMem[i]&0x0000FF00)<<8);
 			ret = ret | ((chunkMem[i]&0x000000FF)<<24);
 			writer.Write(ret);
-		//	writer.Write(chunkMem[i]);
 		}
 	}
 
 	public void DebugSave(){
 		BinaryWriter writer = new BinaryWriter(File.Open((string)(Application.dataPath+"ChunkDebug"+id+".dat"), FileMode.Create));
-		//Debug.Log("now tmp data size:"+CL_Handler.tmpDataSize);
-		//Debug.Log("Whoop "+CL_Handler.tmpChunkData[CL_Handler.tmpDataSize-1]);
+
 		for(int i = 0; i < CL_Handler.tmpDataSize;i++){
 			uint ret = (CL_Handler.tmpChunkData[i]&0xFF000000)>>24;
 			ret = ret | ((CL_Handler.tmpChunkData[i]&0x00FF0000)>>8);

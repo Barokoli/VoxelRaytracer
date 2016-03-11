@@ -3,7 +3,7 @@ using System.Collections;
 
 public unsafe class Renderman {
 	public Camera renderCam;
-	uint* fBuffer;
+	uint* fBuffer;  //Framebuffer memory
 	int imageSize;
 	Vector2 imageSize2;
 	int fBufferId;
@@ -70,19 +70,6 @@ public unsafe class Renderman {
 	}
 
 	public void renderTestSlice(int ix){
-		//slice = slice >= 1f?0.0f:slice+0.01f;
-		//Debug.Log((int)Terrain_Handler.Chunks[0].memId);
-		//return;
-		/*string s = "Chunk Length: "+(int)Terrain_Handler.Chunks[0].MemLength+"\n";
-		for(int we = 0; we < (int)Terrain_Handler.Chunks[0].MemLength;we++){
-			s += (Terrain_Handler.Chunks[0].chunkMem[we]&0xFF000000)==0xC0000000?"L":"N";
-			s += " "+(int)(Terrain_Handler.Chunks[0].chunkMem[we]&0x00FFFFFF)+";";
-			if(we%8==7){
-				s += "\n";
-			}
-		}
-		Debug.Log(s);
-		Debug.Log("Block evaluation: "+evaluateBlock((int)35,(int)12,(int)4,Terrain_Handler.Chunks[0].chunkMem,Terrain_Handler.Chunks[0].MemLength));*/
 		CL_Handler.MemCpy_HostToClient((int)Terrain_Handler.Chunks[0].memId);
 
 		CL_Handler.SetKernelArgMem(slicekernel,0,fBufferId);
@@ -91,8 +78,6 @@ public unsafe class Renderman {
 		CL_Handler.SetKernelArgValue(slicekernel,3,Terrain_Handler.Chunks[0].MemLength,sizeof(int));
 		CL_Handler.SetKernelArgValue(slicekernel,5,(int)imageSize2.x,sizeof(int));
 		CL_Handler.SetKernelArgValue(slicekernel,6,(int)imageSize2.y,sizeof(int));
-		//Debug.Log(Terrain_Handler.Chunks[0].MemLength);
-		//Debug.Log((int)imageSize2.x);
 		CL_Handler.SetKernelArgValue(slicekernel,4,0,sizeof(int));
 
 		globalWorkSize[0] = (int)128;
@@ -116,14 +101,6 @@ public unsafe class Renderman {
 			}
 		}
 		CL_Handler.debugTex.Apply();
-
-
-
-		//Terrain_Handler.Chunks[0].checkFirst(new Vector3(1,0,0));
-		//Terrain_Handler.Chunks[0].checkFirst(new Vector3(2,0,0));
-
-    //block |= lvl<<25;
-    //return block&0x00FFFFFF;
 	}
 
 	public uint evaluateBlock(int relX, int relY,int relZ,uint* chunk,int lastI){
@@ -133,7 +110,6 @@ public unsafe class Renderman {
     uint off = 0;
 
     uint lvl = 64;//TODO:Hardcoded Max size 128?
-    //uint step = 1;
 
     while((block&0xFF000000) != 0xC0000000){
 				Debug.Log("block:"+((block&0xFF000000)==0xC0000000?"L":"N")+" "+(block&0x00FFFFFF)+";");
@@ -146,24 +122,16 @@ public unsafe class Renderman {
         bPos += new Vector3((off&1)*lvl,((off&2)>>1)*lvl,((off&4)>>2)*lvl);
         lvl = lvl >> 1;
         off = 0;
-        //step = step << 1;
     }
-    //block &= 0x00FFFFFF;
-    //block |= lvl<<25;
     return block&0x00FFFFFF;
-    //return chunk[(int)(relPos.x*128+relPos.y)]&0x00FFFFFF;
 }
 
 	public void RenderTerrain(){
-		//GL.IssuePluginEvent(CL_Handler.GetRenderEventFunc(), 1);
-		//CL_Handler.RenderIt();
-		//GL.IssuePluginEvent(0);
 		float t = Time.realtimeSinceStartup;
 		Ray referenceRay = renderCam.ScreenPointToRay(new Vector3((float)(Screen.width*0.5), (float)(Screen.height*0.5), 0));
 		float height = Mathf.Tan(renderCam.fieldOfView*0.5f*Mathf.Deg2Rad)*renderCam.nearClipPlane;
-		Vector3 rightVector = (renderCam.transform.right*height*renderCam.aspect);//*(0.5f/Screen.width);
-		//Debug.Log((0.5f/Screen.width));
-		Vector3 upVector = -(renderCam.transform.up*height);//*(0.5f/Screen.height);
+		Vector3 rightVector = (renderCam.transform.right*height*renderCam.aspect);
+		Vector3 upVector = -(renderCam.transform.up*height);
 		Vector3 clipOff = renderCam.transform.forward*renderCam.nearClipPlane;
 
 		/** 0-2 Camera Position
@@ -192,28 +160,27 @@ public unsafe class Renderman {
 		initDirection[10] = renderCam.transform.forward.y;//cPos.g;
 		initDirection[11] = renderCam.transform.forward.z;//cPos.b;
 
-		initDirection[12] = 0;//(float)Terrain_Handler.Chunks[0].pos.x;
-		initDirection[13] = 0;//(float)Terrain_Handler.Chunks[0].pos.y;
-		initDirection[14] = 0;//(float)Terrain_Handler.Chunks[0].pos.z;
+		initDirection[12] = 0;
+		initDirection[13] = 0;
+		initDirection[14] = 0;
 
 		initDirection[15] = clipOff.x;
 		initDirection[16] = clipOff.y;
 		initDirection[17] = clipOff.z;
 
-		//Debug.Log("ChunkPos: "+Terrain_Handler.Chunks[0].pos);
-		//Debug.Log("CameraPos: "+renderCam.transform.position);
-		//Debug.Log(renderCam.transform.position+rightVector);
-	/*	Debug.DrawLine(renderCam.transform.position+clipOff, clipOff+renderCam.transform.position+rightVector, Color.red);
-		Debug.DrawLine(renderCam.transform.position+clipOff, clipOff+renderCam.transform.position+upVector, Color.green);
-		Debug.DrawLine(renderCam.transform.position+clipOff, clipOff+renderCam.transform.position+renderCam.transform.forward, Color.yellow);
-		Debug.DrawLine(renderCam.ScreenPointToRay(new Vector3(0,0,0)).origin, renderCam.ScreenPointToRay(new Vector3(0,0,0)).origin+renderCam.ScreenPointToRay(new Vector3(0,0,0)).direction, Color.blue);
-*/
-		//Terrain_Handler.Chunks[0].drawDebugBox(Color.red);
+		/*Debug.Log("ChunkPos: "+Terrain_Handler.Chunks[0].pos);
+			Debug.Log("CameraPos: "+renderCam.transform.position);
+			Debug.Log(renderCam.transform.position+rightVector);
+			Debug.DrawLine(renderCam.transform.position+clipOff, clipOff+renderCam.transform.position+rightVector, Color.red);
+			Debug.DrawLine(renderCam.transform.position+clipOff, clipOff+renderCam.transform.position+upVector, Color.green);
+			Debug.DrawLine(renderCam.transform.position+clipOff, clipOff+renderCam.transform.position+renderCam.transform.forward, Color.yellow);
+			Debug.DrawLine(renderCam.ScreenPointToRay(new Vector3(0,0,0)).origin, renderCam.ScreenPointToRay(new Vector3(0,0,0)).origin+renderCam.ScreenPointToRay(new Vector3(0,0,0)).direction, Color.blue);
+			Terrain_Handler.Chunks[0].drawDebugBox(Color.red);
+		*/
+
 
 		CL_Handler.MemCpy_HostToClient(initDirectionId);
 		CL_Handler.MemCpy_HostToClient((int)Terrain_Handler.Chunks[0].memId);
-
-		//Debug.Log("MemLength "+Terrain_Handler.Chunks[0].MemLength);
 
 		// Frame Buffer, ChunkMemory, ChunkMemory Length, Vector Array, max Depth
 		/*Debug.Log("fbid:"+glFrameBufferId);
@@ -226,18 +193,6 @@ public unsafe class Renderman {
 		CL_Handler.DispatchKernel(renderKernel,2,globalWorkSize,null,true);*/
 
 		//CL_Handler.MemCpy_ClientToHost(fBufferId);
-		/*
-		float val = 0;
-		int id = 0;
-		for(int y = 0; y < imageSize2.y;y++){
-			for(int x = 0; x < imageSize2.x; x++){
-				id = (int)(y*imageSize2.x+x);
-				val = ((float)fBuffer[id])/255;
-				CL_Handler.debugTex.SetPixel(x,y,new Color(val,val,val,1));
-			}
-		}
-		//renderTestSlice(35);
-		CL_Handler.debugTex.Apply();*/
 	}
 
 	public void AddToRenderQueue(Vector3 Pos, int Id){

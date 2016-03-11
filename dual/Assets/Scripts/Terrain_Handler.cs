@@ -38,9 +38,7 @@ public class Terrain_Handler : MonoBehaviour {
 	void Start () {
 		renderman = new Renderman();
 		ghostRenderRadius = renderRadius;
-		renderAnchor = anchor;//Camera.main.gameObject;
-		//Chunks.Add(new Chunk(new Vector3(50,5,50),Chunks.Count));
-		//CL_Handler.SetupRandom
+		renderAnchor = anchor;
 		Chunks = new List<Chunk>();
 		CheckChunks();
 		//renderman.RenderTerrain();

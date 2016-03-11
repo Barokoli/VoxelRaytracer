@@ -18,7 +18,7 @@ public unsafe class CL_Handler : MonoBehaviour {
 
 	int activeKernelId;
 
-	public static Texture2D debugTex;
+	//public static Texture2D debugTex;
 
 	public static float* RandomNumbers;
 	public static int RandomNumberMemId;
@@ -48,40 +48,40 @@ public unsafe class CL_Handler : MonoBehaviour {
 	private static extern IntPtr GetRenderEventFunc();
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern int AllocateHostMem(void* data,int size, uint dsize);
+	public static extern int AllocateHostMem(void* data,int size, uint dsize);  //Allocate Memory on Host (Data,Data Length,Format)
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern int CreateFrameBuffer(int width,int height);
+	public static extern int CreateFrameBuffer(int width,int height);  //OpenGL Framebuffer
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern int AllocateHostMem(int data,int size, uint dsize);
+	public static extern int AllocateHostMem(int data,int size, uint dsize); //Allocate Int on Host Memory
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void AllocateClientMem(int flags, int memId);
+	public static extern void AllocateClientMem(int flags, int memId);  //Allocate GPU representative from Host Memory
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern int CreateKernel(string name);
+	public static extern int CreateKernel(string name);  //create Kernel
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void DispatchKernel(int kernelId, int dimensions,int* globalWorkSize,int* localWorkSize,bool l);
+	public static extern void DispatchKernel(int kernelId, int dimensions,int* globalWorkSize,int* localWorkSize,bool l);  //run a Kernel
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void SetKernelArgMem(int kernelId,int argIdx,int memId);
+	public static extern void SetKernelArgMem(int kernelId,int argIdx,int memId);  //Set Kernel Memory
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void SetKernelArgLocalMem(int kernelId,int argIdx,uint size);
+	public static extern void SetKernelArgLocalMem(int kernelId,int argIdx,uint size);  //Set shared Memory size
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void SetKernelArgValue(int kernelId,int argIdx,int value,uint dsize);
+	public static extern void SetKernelArgValue(int kernelId,int argIdx,int value,uint dsize);  //Set a simple Value
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void SetKernelArgFB(int kernelId,int argIdx,int memId);
+	public static extern void SetKernelArgFB(int kernelId,int argIdx,int memId);  //Set Framebuffer to kernel
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void MemCpy_HostToClient (int memId);
+	public static extern void MemCpy_HostToClient (int memId);  //Copy from Host to Client
 
 	[DllImport ("OpenGLPlugin")]
-	public static extern void MemCpy_ClientToHost (int memId);
+	public static extern void MemCpy_ClientToHost (int memId);  //Copy from Client to Host
 
 	[DllImport ("OpenGLPlugin")]
 	public static extern void Reset();
@@ -89,7 +89,7 @@ public unsafe class CL_Handler : MonoBehaviour {
 	void Start () {
 
 		//Debuging code
-		debugTex = new Texture2D(Screen.width,Screen.height);
+		//debugTex = new Texture2D(Screen.width,Screen.height);
 
 		DebugDelegate callback_delegate = new DebugDelegate( CallBackLog );
 		// Convert callback_delegate into a function pointer that can be
@@ -98,7 +98,7 @@ public unsafe class CL_Handler : MonoBehaviour {
 		// Call the API passing along the function pointer.
 		SetDebugFunction( intptr_delegate );
 
-		if(PreErrCheck(CheckPreErrors())){
+		if(PreErrCheck(CheckPreErrors())){  //Initialize OpenCL context etc
 
 			activeKernelId = createKernel("random_number_kernel");
 
@@ -113,8 +113,8 @@ public unsafe class CL_Handler : MonoBehaviour {
 			globalWorkSize[0] = (int)Terrain_Handler.NoiseSize*2;
 			globalWorkSize[1] = (int)Terrain_Handler.NoiseSize*2;
 			globalWorkSize[2] = (int)Terrain_Handler.NoiseSize*2;
-			DispatchKernel(activeKernelId,3,globalWorkSize,null,false);
-			MemCpy_ClientToHost(RandomNumberMemId);//TODO:Leave on client?
+			DispatchKernel(activeKernelId,3,globalWorkSize,null,false);  //Create random Numbers
+			//MemCpy_ClientToHost(RandomNumberMemId);//TODO:Leave on client?
 			//Debug.Log(RandomNumbers[0]);
 			Unmanaged.Free(globalWorkSize);
 			Unmanaged.Free(localWorkSize);
@@ -124,19 +124,6 @@ public unsafe class CL_Handler : MonoBehaviour {
 				tmpDataSize += i;
 				i = i>>3;
 			}
-			//tmpDataSizeCube = tmpDataSize;
-			/*tmpDataSizeCube = ToCube(tmpDataSize);
-			tmpChunkData = (uint*) Unmanaged.New<uint>(tmpDataSizeCube);
-			tmpChunkDataId = AllocateHostMem(tmpChunkData,tmpDataSizeCube,sizeof(int));
-			AllocateClientMem(0,tmpChunkDataId);
-
-			tmpScanData = (uint*) Unmanaged.New<uint>(tmpDataSizeCube);
-			tmpScanDataId = AllocateHostMem(tmpScanData,tmpDataSizeCube,sizeof(int));
-			AllocateClientMem(0,tmpScanDataId);
-
-			tmpScanLengthData = (uint*) Unmanaged.New<uint>(tmpDataSizeCube/Terrain_Handler.MaxChunkSize);
-			tmpScanLengthDataId = AllocateHostMem(tmpScanLengthData,tmpDataSizeCube/Terrain_Handler.MaxChunkSize,sizeof(int));//TODO:Hardcoded Max Work item size
-			AllocateClientMem(0,tmpScanLengthDataId);*/
 
 			tmpDataSizeCube = ToCube(tmpDataSize);
 			Debug.Log("tmpDataSize: "+tmpDataSize);
@@ -152,34 +139,9 @@ public unsafe class CL_Handler : MonoBehaviour {
 			tmpScanLengthData = (uint*) Unmanaged.New<uint>(tmpDataSizeCube/Terrain_Handler.MaxChunkSize);
 			tmpScanLengthDataId = AllocateHostMem(tmpScanLengthData,tmpDataSizeCube/Terrain_Handler.MaxChunkSize,sizeof(int));//TODO:Hardcoded Max Work item size
 			AllocateClientMem(0,tmpScanLengthDataId);
-			//Debug.Log(Application.dataPath+"/Shaders/SimpleVertexShader.vertexshader");
-			//Debug.Log(LoadShaderProgram(Application.dataPath+"/Shaders/SimpleVertexShader.vertexshader",Application.dataPath+"/Shaders/SimpleFragmentShader.fragmentshader"));
 
-			StartCoroutine("CallPluginAtEndOfFrames");
-	}
-
-
-		//MemCpy_HostToClient(tmpChunkDataId);
-		//MemCpy_ClientToHost(RandomNumberMemId);//TODO: Delete
-		//Unmanaged.Free(RandomNumbers);
-		//activeKernelId = createKernel("square");
-
-		//myData = (float*) Unmanaged.New<float>(262144);
-		//int memId = AllocateHostMem(myData,262144,sizeof(float));
-		//AllocateClientMem(0,memId);
-		//SetKernelArg(activeKernelId,0,memId);
-		//MemCpy_HostToClient(memId);
-
-		/*int* globalWorkSize = (int*) Unmanaged.New<int>(3);
-		int* localWorkSize = (int*) Unmanaged.New<int>(3);
-		globalWorkSize[0] = (int)64;
-		globalWorkSize[1] = (int)64;
-		globalWorkSize[2] = (int)64;
-		localWorkSize [0] = (int)8;
-		localWorkSize [1] = (int)8;
-		localWorkSize [2] = (int)8;*/
-		//DispatchKernel(activeKernelId,memId,3,globalWorkSize,localWorkSize);
-		//MemCpy_ClientToHost(memId);
+			StartCoroutine("CallPluginAtEndOfFrames");//Start Renderer
+		}
 	}
 
 	private IEnumerator CallPluginAtEndOfFrames()
@@ -188,13 +150,7 @@ public unsafe class CL_Handler : MonoBehaviour {
 			// Wait until all frame rendering is done
 			yield return new WaitForEndOfFrame();
 
-			// Set time for the plugin
-			//SetTimeFromUnity (Time.timeSinceLevelLoad);
-
 			// Issue a plugin event with arbitrary integer identifier.
-			// The plugin can distinguish between different
-			// things it needs to do based on this ID.
-			// For our simple plugin, it does not matter which ID we pass here.
 			GL.IssuePluginEvent(GetRenderEventFunc(), 1);
 		}
 	}
@@ -205,13 +161,6 @@ public unsafe class CL_Handler : MonoBehaviour {
 			Debug.Log(debugTex.GetPixel((int)Input.mousePosition.x,(int)Input.mousePosition.y));
 		}*/
 	}
-
-	/*int AllocateHostMemory(void* data,int size, uint dsize){
-		FreeAllocatedMemory callback_delegate = new FreeAllocatedMemory( FreeAllocMem );
-		IntPtr funcPtr = Marshal.GetFunctionPointerForDelegate(callback_delegate);
-		//SetFreeAllocatedMemory( intptr_delegate );
-		return AllocateHostMem(data,size,dsize,funcPtr);
-	}*/
 
 	int ToCube (int n){
 		return (int)Mathf.Ceil((float)n/(float)Terrain_Handler.MaxChunkSize)*Terrain_Handler.MaxChunkSize;
@@ -237,7 +186,6 @@ public unsafe class CL_Handler : MonoBehaviour {
 		if(Input.GetKeyDown("space")){
 			Debug.Log(tmpChunkData[2]);
 		}
-		//GL.glGetString(GL_VERSION);
 	}
 
 	bool PreErrCheck(int i){
@@ -255,12 +203,7 @@ public unsafe class CL_Handler : MonoBehaviour {
 	}
 
 	public static int createKernel(string s){
-		/*char* r = (char*)Marshal.AllocHGlobal(s.Length).ToPointer();
-		for(var i = 0; i < s.Length;i++){
-			r[i]=s[i];
-		}*/
 		int ri = CreateKernel(s);
-		//Marshal.FreeHGlobal(new System.IntPtr(r));
 		return ri;
 	}
 

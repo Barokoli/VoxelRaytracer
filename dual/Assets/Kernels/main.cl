@@ -15,6 +15,7 @@ static int rand(int* seed) // 1 <= *seed < m
     return(*seed);
 }
 
+//Receive Values for Blocks from Random Memory
 static int GetBlock(int x, int y, int z,__global float* r, int noiseCount, int noiseSize){
     //return x%2;
     //return x;
@@ -59,11 +60,7 @@ static int GetBlock(int x, int y, int z,__global float* r, int noiseCount, int n
     return (int)(127.5f*(value+1.0f));//255;//(yf%2)==1?255:0;//(int)yf;//(int)(127.5f*(value+1.0f));//TODO: if Clamp is used resolution can be improved. currently uses one 10th of possible res.
 }
 
-__kernel void square (__global float* x){
-    int i = get_global_id(0)+get_global_id(1)*get_global_size(0)+get_global_id(2)*get_global_size(0)*get_global_size(1);
-    x[i]=(float)i*i;
-}
-
+//Fill Memory with random Values from seed
 __kernel void random_number_kernel(__global float* seed_memory, int start_seed)
 {
     int global_id = get_global_id(0)+get_global_id(1)*get_global_size(0)+get_global_id(2)*get_global_size(0)*get_global_size(1); // Get the global id in 3D.
@@ -161,8 +158,6 @@ __kernel void chunkInit2(__global int* tmpData, int Off){//init with 8th of kern
     int z = get_global_id(2);
     
     int id = (x+y*get_global_size(0)+z*get_global_size(0)*get_global_size(1))*8;
-    //int globId = x+y*get_global_size(0)+z*get_global_size(0)*get_global_size(1);
-    //int globId = ((((int)x*0.5f) + ((int)y*0.5f)*get_global_size(0)*0.5f + ((int)z*0.5f)*get_global_size(0)*get_global_size(1)*0.25f))*8 + (x%2+(y%2)<<1+(z%2)<<2);
     int globId = ((((int)(x*0.5f)) + (int)((int)y*0.5f)*get_global_size(0)*0.5f + (int)((int)z*0.5f)*get_global_size(0)*get_global_size(1)*0.25f))*8 + (x%2+((y%2)*2)+((z%2)*4));
     
     int cubeSize = get_global_size(0)*get_global_size(1)*get_global_size(2);
@@ -176,15 +171,6 @@ __kernel void chunkInit2(__global int* tmpData, int Off){//init with 8th of kern
     f = tmpData[Off+id+5];
     g = tmpData[Off+id+6];
     h = tmpData[Off+id+7];
-    
-    /*a = GetBlock[x*2+xOff  ,y*2+yOff  ,z*2+zOff  );
-    b = GetBlock[x*2+xOff+1,y*2+yOff  ,z*2+zOff  );
-    c = GetBlock[x*2+xOff  ,y*2+yOff+1,z*2+zOff  );
-    d = GetBlock(x*2+xOff+1,y*2+yOff+1,z*2+zOff  );
-    e = GetBlock(x*2+xOff  ,y*2+yOff  ,z*2+zOff+1);
-    f = GetBlock(x*2+xOff+1,y*2+yOff  ,z*2+zOff+1);
-    g = GetBlock(x*2+xOff  ,y*2+yOff+1,z*2+zOff+1);
-    h = GetBlock(x*2+xOff+1,y*2+yOff+1,z*2+zOff+1);*/
 
     if(a == b &&a == c &&a == d &&a == e &&a == f &&a == g &&a == h&&(a&0x40000000)!=0){
         tmpData[Off+id  ] = (int) 0x00000000;
@@ -197,10 +183,6 @@ __kernel void chunkInit2(__global int* tmpData, int Off){//init with 8th of kern
         tmpData[Off+id+7] = (int) 0x00000000;
         
         tmpData[Off+(cubeSize<<3)+globId] = (int) (0xC0000000)|(0x00FFFFFF&a);
-        /*tmpData[Off+(get_global_size(0)<<3)+
-                (int)(x/2.0f)*8+x%2+
-                ((int)(y/2.0f)*8)*(get_global_size(0)>>1)+y%2+
-                ((int)(z/2.0f)*8)*(get_global_size(0)*get_global_size(1)>>2)+z%2] = (int) (0xC0000000)|(0x00FFFFFF&a);*/
     }else{
         /*#if UseAverage
         tmpData[Off+(get_global_size(0)<<3)+global_id] =(int) (0x80000000)|(0x00FFFFFF&(average(a,b,c,d,e,f,g,h)));
@@ -209,10 +191,6 @@ __kernel void chunkInit2(__global int* tmpData, int Off){//init with 8th of kern
         #endif*/
         
         tmpData[Off+(cubeSize<<3)+globId] = (int) (0x80000000)|(0x00FFFFFF&(Off+id));
-        /*tmpData[Off+(get_global_size(0)<<3)+
-                (int)(x/2.0f)*8+x%2+
-                ((int)(y/2.0f)*8)*(get_global_size(0)>>1)+y%2+
-                ((int)(z/2.0f)*8)*(get_global_size(0)*get_global_size(1)>>2)+z%2] =(int) (0x80000000)|(0x00FFFFFF&(Off+id));*/
     }
 }
 
@@ -269,6 +247,8 @@ __kernel void BScan(__global uint *a,
     r[2*gid] = b[2*lid];
     r[2*gid+1] = b[2*lid+1];
 }
+
+//Copy Data from Scanned unsorted to a sorted Memory
 __kernel void chunkMemCpy(__global uint *chunk,__global uint *scan,__global uint *result,__global uint *length,uint dChunkSize){
     int gid = get_global_id(0);
     uint value = chunk[gid];
@@ -288,7 +268,7 @@ __kernel void chunkMemCpy(__global uint *chunk,__global uint *scan,__global uint
     }
 }
 
-//stürzt ab relPos check?
+//Get Value of a Block in Octree
 static uint EvaluateBlock(int relX,int relY,int relZ,__global int *chunk,uint lastI){
     float4 bPos = float4(0,0,0,0);
     uint block = chunk[lastI-1];
@@ -319,8 +299,6 @@ __kernel void RenderSlice(__global int *fBuffer,__global int *chunk,int sliceX,i
     int idy = get_global_id(1);
     
     fBuffer[idx+idy*get_global_size(0)] = EvaluateBlock(sliceX,idy,idx,chunk,(uint)(ChunkL));
-    //fBuffer[idx+idy*get_global_size(0)] = (int) EvaluateBlock(sliceX,idx,idy,chunk,(uint)(ChunkL-1));
-    //fBuffer[idx+idy*get_global_size(0)] =(int) EvaluateBlock(float4(sliceX,idx,idy,0),chunk,(uint)(ChunkL-1));
 }
 
 static int castRay(float4 origin, float4 dir,__global int *chunk,int chunkL){
