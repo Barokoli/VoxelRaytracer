@@ -412,7 +412,7 @@ static float4 boxRayIntersection(float4 origin,float4 dir, float4 pos){
  * 12-14 Chunk Position
  * */
 
-__kernel void InitRaycaster(write_only image2d_t output,__global int *chunk,int chunkL,__global float *vec,int depth){
+__kernel void InitRaycaster(__write_only image2d_t output,__global int *chunk,int chunkL,__global float *vec,int depth){
     float screenX = get_global_id(0);
     float screenY = get_global_id(1);
     

@@ -183,14 +183,14 @@ public unsafe class Renderman {
 		CL_Handler.MemCpy_HostToClient((int)Terrain_Handler.Chunks[0].memId);
 
 		// Frame Buffer, ChunkMemory, ChunkMemory Length, Vector Array, max Depth
-		/*Debug.Log("fbid:"+glFrameBufferId);
+		//Debug.Log("fbid:"+glFrameBufferId);
 		CL_Handler.SetKernelArgFB(renderKernel,0,glFrameBufferId);
 		CL_Handler.SetKernelArgMem(renderKernel,1,(int)Terrain_Handler.Chunks[0].memId);
 		CL_Handler.SetKernelArgValue(renderKernel,2,Terrain_Handler.Chunks[0].MemLength,sizeof(int));
 		CL_Handler.SetKernelArgMem(renderKernel,3,initDirectionId);
 		CL_Handler.SetKernelArgValue(renderKernel,4,7,sizeof(int));
 
-		CL_Handler.DispatchKernel(renderKernel,2,globalWorkSize,null,true);*/
+		//CL_Handler.DispatchKernel(renderKernel,2,globalWorkSize,null,true);
 
 		//CL_Handler.MemCpy_ClientToHost(fBufferId);
 	}

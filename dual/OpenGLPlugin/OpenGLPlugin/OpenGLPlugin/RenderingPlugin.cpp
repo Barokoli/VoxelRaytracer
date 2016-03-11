@@ -37,6 +37,7 @@ cl_uint num_devices;
 cl_device_id *deviceIdList;
 cl_command_queue cq;
 
+
 cl_mem** voidList;
 
 const char* kernelSource;
