@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9E15D6D51C57A2EF008DC174 /* glew.c in Sources */ = {isa = PBXBuildFile; fileRef = 9E15D6D41C57A2EF008DC174 /* glew.c */; };
-		9EEE54D71B0B306900B3483D /* RenderingPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9EEE54D41B0B306900B3483D /* RenderingPlugin.cpp */; };
+		9E6C5AC21C92FD1F005E7A05 /* RenderingPlugin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9E6C5AC11C92FD1F005E7A05 /* RenderingPlugin.cpp */; };
 		9EEE54DA1B0B31DB00B3483D /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EEE54D91B0B31DB00B3483D /* OpenGL.framework */; };
 		9EEE54DC1B0B3D5500B3483D /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EEE54DB1B0B3D5500B3483D /* OpenCL.framework */; };
 /* End PBXBuildFile section */
@@ -21,10 +21,10 @@
 		9E1E4D9D1C569CA80011CB49 /* IUnityGraphicsD3D11.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphicsD3D11.h; path = ../Unity/IUnityGraphicsD3D11.h; sourceTree = "<group>"; };
 		9E1E4D9E1C569CA80011CB49 /* IUnityGraphicsD3D12.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityGraphicsD3D12.h; path = ../Unity/IUnityGraphicsD3D12.h; sourceTree = "<group>"; };
 		9E1E4D9F1C569CA80011CB49 /* IUnityInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IUnityInterface.h; path = ../Unity/IUnityInterface.h; sourceTree = "<group>"; };
+		9E6C5AC11C92FD1F005E7A05 /* RenderingPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderingPlugin.cpp; sourceTree = "<group>"; };
+		9E6C5AC31C92FD30005E7A05 /* UnityPluginInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityPluginInterface.h; sourceTree = "<group>"; };
 		9EEE54CA1B0B304F00B3483D /* OpenGLPlugin.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenGLPlugin.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EEE54CE1B0B304F00B3483D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9EEE54D41B0B306900B3483D /* RenderingPlugin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderingPlugin.cpp; path = ../../../../../Downloads/RenderingPluginExample45/RenderingPlugin/RenderingPlugin.cpp; sourceTree = "<group>"; };
-		9EEE54D61B0B306900B3483D /* UnityPluginInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnityPluginInterface.h; path = ../../../../../Downloads/RenderingPluginExample45/RenderingPlugin/UnityPluginInterface.h; sourceTree = "<group>"; };
 		9EEE54D91B0B31DB00B3483D /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		9EEE54DB1B0B3D5500B3483D /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -70,8 +70,8 @@
 				9E1E4D9D1C569CA80011CB49 /* IUnityGraphicsD3D11.h */,
 				9E1E4D9E1C569CA80011CB49 /* IUnityGraphicsD3D12.h */,
 				9E1E4D9F1C569CA80011CB49 /* IUnityInterface.h */,
-				9EEE54D41B0B306900B3483D /* RenderingPlugin.cpp */,
-				9EEE54D61B0B306900B3483D /* UnityPluginInterface.h */,
+				9E6C5AC11C92FD1F005E7A05 /* RenderingPlugin.cpp */,
+				9E6C5AC31C92FD30005E7A05 /* UnityPluginInterface.h */,
 				9EEE54CD1B0B304F00B3483D /* Supporting Files */,
 			);
 			path = OpenGLPlugin;
@@ -152,7 +152,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E15D6D51C57A2EF008DC174 /* glew.c in Sources */,
-				9EEE54D71B0B306900B3483D /* RenderingPlugin.cpp in Sources */,
+				9E6C5AC21C92FD1F005E7A05 /* RenderingPlugin.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
